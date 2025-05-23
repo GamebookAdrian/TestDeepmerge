@@ -1,0 +1,15 @@
+{
+  "name": "01_pruebadeepmerge",
+  "version": "1.0.0",
+  "description": "",
+  "main": "merge-yaml-sop.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "deepmerge": "^4.3.1",
+    "yaml": "^2.8.0"
+  }
+}
