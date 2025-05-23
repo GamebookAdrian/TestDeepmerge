@@ -8,6 +8,8 @@ Proyecto para combinar múltiples archivos YAML en uno solo, con soporte para ar
 
 Este pequeño script en Node.js permite leer varios archivos YAML, incluyendo archivos cifrados con GPG (`.gpg`), descifrarlos, y hacer un merge profundo de su contenido usando la librería `deepmerge`. Ideal para manejar configuraciones en entornos seguros que requieren cifrado de secretos.
 
+Además, la lógica principal está implementada siguiendo principios de programación funcional pura, separando claramente la lógica pura (parseo, merge, serialización) de la entrada/salida (lectura y descifrado de archivos).
+
 ---
 
 ## Características
@@ -16,6 +18,7 @@ Este pequeño script en Node.js permite leer varios archivos YAML, incluyendo ar
 - Descifrado automático de archivos usando GPG (debes tener la clave privada configurada).
 - Merge profundo de varios archivos YAML en un solo objeto.
 - Exporta el resultado final en formato YAML legible.
+- Código separado en funciones puras y funciones IO, para facilitar testing y mantenimiento.
 
 ---
 
@@ -73,6 +76,18 @@ gpg --encrypt -r tu_email@dominio.com -o config/secrets.yaml.gpg config/secrets.
 ```
 
 - Si tu clave privada tiene passphrase, asegúrate de tener configurado `gpg-agent` para evitar fallos de descifrado en modo no interactivo.
+
+---
+
+## Estructura del código
+
+El proyecto está organizado en funciones puras y funciones IO para mantener un diseño limpio:
+
+- `parseYaml(content: string): object` — Función pura para parsear YAML.
+- `toYamlString(obj: object): string` — Función pura para serializar a YAML.
+- `mergeObjects(objs: object[]): object` — Función pura para hacer merge profundo.
+- `readFileContent(path: string): string` — Función IO para leer o descifrar archivo.
+- `readAndParseYamls(paths: string[]): object[]` — Función IO para leer y parsear varios archivos.
 
 ---
 

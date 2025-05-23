@@ -1,45 +1,63 @@
-const { execSync } = require('child_process');  // Importa execSync para ejecutar comandos shell sincronamente
-const fs = require('fs');                        
-const path = require('path');                    
-const YAML = require('yaml');                    // Librería para parsear y serializar YAML
-const deepmerge = require('deepmerge');          // Librería para hacer merge profundo entre objetos JS
+const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const YAML = require('yaml');
+const deepmerge = require('deepmerge');
 
-// Función para leer un archivo YAML, que puede estar cifrado (.gpg/.enc) o en texto plano
-function readYaml(pathStr) {
-  const ext = path.extname(pathStr);             // Obtiene la extensión del archivo (ej: '.gpg', '.yaml')
+/**
+ * Función pura que parsea un string YAML a objeto JS.
+ * @param {string} content 
+ * @returns {object}
+ */
+const parseYaml = (content) => YAML.parse(content);
 
-  let content;
+/**
+ * Función pura que convierte objeto JS a string YAML.
+ * @param {object} obj 
+ * @returns {string}
+ */
+const toYamlString = (obj) => YAML.stringify(obj);
 
-  // Si el archivo está cifrado (.gpg o .enc), se descifra con GPG antes de leerlo
+/**
+ * Función pura que realiza merge profundo de array de objetos.
+ * @param {object[]} objs 
+ * @returns {object}
+ */
+const mergeObjects = (objs) => objs.reduce((acc, curr) => deepmerge(acc, curr), {});
+
+/**
+ * Función IO que lee un archivo y devuelve su contenido descifrado o plano.
+ * @param {string} filePath 
+ * @returns {string} contenido en texto
+ */
+const readFileContent = (filePath) => {
+  const ext = path.extname(filePath);
   if (ext === '.gpg' || ext === '.enc') {
-    console.log(`🔐 Descifrando ${pathStr}`);
-    // Ejecuta el comando gpg para descifrar y devuelve el contenido en texto plano
-    content = execSync(`gpg --decrypt ${pathStr}`, { encoding: 'utf8' });
+    console.log(`🔐 Descifrando ${filePath}`);
+    return execSync(`gpg --decrypt ${filePath}`, { encoding: 'utf8' });
   } else {
-    // Si no está cifrado, lee el archivo directamente en texto
-    content = fs.readFileSync(pathStr, 'utf8');
+    return fs.readFileSync(filePath, 'utf8');
   }
+};
 
-  // Parsea el contenido YAML a objeto JavaScript y lo devuelve
-  return YAML.parse(content);
-}
+/**
+ * Función IO que lee y parsea varios archivos YAML (descifrando si toca).
+ * @param {string[]} paths 
+ * @returns {object[]} array de objetos JS
+ */
+const readAndParseYamls = (paths) => paths.map(filePath => parseYaml(readFileContent(filePath)));
 
-// Función que recibe un array de rutas a archivos YAML y los combina en un solo objeto
-function mergeYamlFiles(paths) {
-  // Lee y parsea cada archivo YAML (descifra si es necesario)
-  const yamls = paths.map(readYaml);
+// Uso principal:
 
-  // Usa deepmerge para combinar todos los objetos en uno solo (merge profundo)
-  return yamls.reduce((acc, curr) => deepmerge(acc, curr), {});
-}
-
-// Ejemplo de uso: merge de 3 archivos (2 YAML planos + 1 cifrado)
-const result = mergeYamlFiles([
+const paths = [
   'config/base.yaml',
   'config/override.yaml',
   'config/secrets.yaml.gpg'
-]);
+];
+
+const yamls = readAndParseYamls(paths);
+const merged = mergeObjects(yamls);
+const resultYaml = toYamlString(merged);
 
 console.log('🧪 Resultado final:');
-// Convierte el objeto resultante de vuelta a YAML para mostrarlo por consola
-console.log(YAML.stringify(result));
+console.log(resultYaml);
