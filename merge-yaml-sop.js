@@ -37,7 +37,7 @@ function mergeYamlFiles(paths) {
 const result = mergeYamlFiles([
   'config/base.yaml',
   'config/override.yaml',
-  'config/secrets.yaml.gpg'
+  'config/secrets.yaml' // O usa el archivo gpg que generaste
 ]);
 
 console.log('🧪 Resultado final:');
