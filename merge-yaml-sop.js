@@ -52,7 +52,7 @@ const readAndParseYamls = (paths) => paths.map(filePath => parseYaml(readFileCon
 const paths = [
   'config/base.yaml',
   'config/override.yaml',
-  'config/secrets.yaml.gpg'
+  'config/secrets.yaml' // O usa el archivo gpg que generaste
 ];
 
 const yamls = readAndParseYamls(paths);
